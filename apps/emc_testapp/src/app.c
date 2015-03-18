@@ -70,6 +70,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // module global vars
 //------------------------------------------------------------------------------
 UINT   cnt_g;
+extern tErrorCounters errorCounter_g;
 //------------------------------------------------------------------------------
 // global function prototypes
 //------------------------------------------------------------------------------
@@ -231,7 +232,7 @@ tOplkError processSync(void)
                 {
                     if (inCnt == DATA_CYLE_DELAY)
                     {
-                        nodeVar_l[i].dataErrors++;
+                        errorCounter_g.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -263,7 +264,7 @@ tOplkError processSync(void)
                     // Is this the error?? should we move to next value or wait for last
                     if (inCnt == DATA_CYLE_DELAY)
                     {
-                        nodeVar_l[i].dataErrors++;
+                        errorCounter_g.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -296,7 +297,7 @@ tOplkError processSync(void)
                     // Is this the error?? should we move to next value or wait for last
                     if (inCnt == DATA_CYLE_DELAY)
                     {
-                        nodeVar_l[i].dataErrors++;
+                        errorCounter_g.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -319,7 +320,7 @@ tOplkError processSync(void)
                     //error increase the data error count, stay here?
                     if (inCnt == DATA_CYLE_DELAY)
                     {
-                        nodeVar_l[i].dataErrors++;
+                        errorCounter_g.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -342,7 +343,7 @@ tOplkError processSync(void)
                     //error increase the data error count, stay here?
                     if (inCnt == DATA_CYLE_DELAY)
                     {
-                        nodeVar_l[i].dataErrors++;
+                        errorCounter_g.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -355,7 +356,7 @@ tOplkError processSync(void)
         }
 
         /* Running LEDs */
-        /* period for LED flashing determined by inputs */
+        /* period for LED flashing determined by CYCLE_DELAY */
         nodeVar_l[i].period = DATA_CYLE_DELAY;
         if (cnt_g % nodeVar_l[i].period == 0)
         {
@@ -419,7 +420,7 @@ tOplkError processSync(void)
 
     if ((cnt_g % DEFAULT_MAX_CYCLE_COUNT) == 0)
     {
-        printf("\rCycles %d Data Errors %d", cnt_g, nodeVar_l[0].dataErrors);
+        printf("\rCycles %d Data Errors %d", cnt_g, errorCounter_g.dataError);
         fflush(stdout);
     }
 

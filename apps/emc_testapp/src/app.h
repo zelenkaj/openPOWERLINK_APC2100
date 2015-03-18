@@ -51,6 +51,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //------------------------------------------------------------------------------
 // typedef
 //------------------------------------------------------------------------------
+typedef struct sErrorFlags
+{
+    BOOL        fGsOff;
+    BOOL        fCycleError;
+} tErrorFlags;
+
 typedef struct sErrorCounters
 {
     UINT            cycleError;
@@ -58,7 +64,9 @@ typedef struct sErrorCounters
     UINT            heartBeatError;
     UINT            nmtError;
     UINT            confError;
-};
+    UINT            dataError;
+} tErrorCounters;
+
 //------------------------------------------------------------------------------
 // function prototypes
 //------------------------------------------------------------------------------

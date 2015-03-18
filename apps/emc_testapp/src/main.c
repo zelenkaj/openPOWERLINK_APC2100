@@ -73,8 +73,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // module global vars
 //------------------------------------------------------------------------------
 const BYTE aMacAddr_g[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static BOOL fGsOff_l;
+static tErrorFlags errorFlags_l;
 extern UINT   cnt_g;
+tErrorCounters  errorCounter_g;
 //------------------------------------------------------------------------------
 // global function prototypes
 //------------------------------------------------------------------------------
@@ -99,7 +100,7 @@ typedef struct
 typedef enum 
 {
     kExitUnknown = 0,
-    kExitCycleEror,
+    kExitCycleError,
     kExitResetFailure,
     kExitHeartBeat,
     kExitGsOff,
@@ -155,7 +156,9 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    initEvents(&fGsOff_l);
+    memset(&errorCounter_g, 0, sizeof(tErrorCounters));
+
+    initEvents(&errorFlags_l);
 
     version = oplk_getVersion();
     printf("----------------------------------------------------\n");
@@ -183,7 +186,10 @@ int main(int argc, char** argv)
             shutdownPowerlink();
             shutdownApp();
             system_msleep(1000);
+
             if ((ret = initPowerlink(CYCLE_LEN, opts.cdcFile, aMacAddr_g)) != kErrorOk)
+                goto ExitFail;
+            if ((ret = initApp()) != kErrorOk)
                 goto ExitFail;
         }
     }
@@ -194,6 +200,8 @@ Exit:
     exitEvents();
     shutdownApp();
 ExitFail:
+    if (ret != kErrorOk)
+        printf("Main exited with error 0x%X\n",ret);
     system_exit();
 
     return 0;
@@ -385,9 +393,17 @@ static tAppExitReturn loopMain(void)
 
         if (oplk_checkKernelStack() == FALSE)
         {
+            errorCounter_g.heartBeatError++;
             fExit = TRUE;
             appReturn = kExitHeartBeat;
             fprintf(stderr, "Kernel stack has gone! Exiting...\n");
+        }
+
+        if (errorFlags_l.fCycleError)
+        {
+            fExit = TRUE;
+            appReturn = kExitCycleError;
+            fprintf(stderr, "Cycle error ocurred Exiting...\n");
         }
 
 #if defined(CONFIG_USE_SYNCTHREAD) || defined(CONFIG_KERNELSTACK_DIRECTLINK)
@@ -419,7 +435,7 @@ static void shutdownPowerlink(void)
     UINT                i;
 
     // NMT_GS_OFF state has not yet been reached
-    fGsOff_l = FALSE;
+    errorFlags_l.fGsOff = FALSE;
 
 #if !defined(CONFIG_KERNELSTACK_DIRECTLINK) && defined(CONFIG_USE_SYNCTHREAD)
     system_stopSyncThread();
@@ -432,7 +448,7 @@ static void shutdownPowerlink(void)
     // small loop to implement timeout waiting for thread to terminate
     for (i = 0; i < 1000; i++)
     {
-        if (fGsOff_l)
+        if (errorFlags_l.fGsOff)
             break;
     }
 

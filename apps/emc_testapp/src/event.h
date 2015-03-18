@@ -43,7 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // includes
 //------------------------------------------------------------------------------
 #include <oplk/oplk.h>
-
+#include "app.h"
 //------------------------------------------------------------------------------
 // const defines
 //------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ extern "C"
 {
 #endif
 
-void initEvents(BOOL* pfGsOff_p);
+void initEvents(tErrorFlags* pErrorFlags_p);
 void exitEvents(void);
 tOplkError processEvents(tOplkApiEventType EventType_p,
                          tOplkApiEventArg* pEventArg_p,

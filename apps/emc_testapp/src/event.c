@@ -45,7 +45,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <oplk/debugstr.h>
 #include <console/console.h>
 #include "event.h"
-#include "app.h"
 
 #include <plkled.h>
 
@@ -60,8 +59,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //------------------------------------------------------------------------------
 // module global vars
 //------------------------------------------------------------------------------
-static BOOL*    pfGsOff_l;
-
+extern tErrorCounters errorCounter_g;
 //------------------------------------------------------------------------------
 // global function prototypes
 //------------------------------------------------------------------------------
@@ -81,6 +79,7 @@ static BOOL*    pfGsOff_l;
 //------------------------------------------------------------------------------
 // local vars
 //------------------------------------------------------------------------------
+static tErrorFlags* pErrorFlags_l;
 
 //------------------------------------------------------------------------------
 // local function prototypes
@@ -132,15 +131,15 @@ static tOplkError processSdoEvent(tOplkApiEventType EventType_p,
 The function initializes the applications event module
 
 \param  pCycle_p                Pointer to cycle time.
-\param  pfGsOff_p               Pointer to GsOff flag (determines that stack is down)
+\param  pErrorFlags_p           Pointer to error flags (determines that stack is down)
 
 \ingroup module_demo_mn_console
 */
 //------------------------------------------------------------------------------
 
-void initEvents(BOOL* pfGsOff_p)
+void initEvents(tErrorFlags* pErrorFlags_p)
 {
-    pfGsOff_l = pfGsOff_p;
+    pErrorFlags_l = pErrorFlags_p;
     plkled_init();
 }
 
@@ -273,7 +272,7 @@ static tOplkError processStateChangeEvent(tOplkApiEventType EventType_p,
     UNUSED_PARAMETER(EventType_p);
     UNUSED_PARAMETER(pUserArg_p);
 
-    if (pfGsOff_l == NULL)
+    if (pErrorFlags_l == NULL)
     {
         console_printlog("Application event module is not initialized!\n");
         return kErrorGeneralError;
@@ -292,7 +291,7 @@ static tOplkError processStateChangeEvent(tOplkApiEventType EventType_p,
                              debugstr_getNmtEventStr(pNmtStateChange->nmtEvent));
 
             // signal that stack is off
-            *pfGsOff_l = TRUE;
+            pErrorFlags_l->fGsOff = TRUE;
             break;
 
         case kNmtGsResetCommunication:
@@ -329,6 +328,9 @@ static tOplkError processStateChangeEvent(tOplkApiEventType EventType_p,
             break;
     }
 
+    if (pNmtStateChange->nmtEvent == kNmtEventNmtCycleError)
+        errorCounter_g.cycleError++;
+
     return ret;
 }
 
@@ -356,6 +358,7 @@ static tOplkError processErrorWarningEvent(tOplkApiEventType EventType_p,
 
     UNUSED_PARAMETER(EventType_p);
     UNUSED_PARAMETER(pUserArg_p);
+    errorCounter_g.stackError++;
 
     console_printlog("Err/Warn: Source = %s (%02X) OplkError = %s (0x%03X)\n",
                      debugstr_getEventSourceStr(pInternalError->eventSource),
@@ -417,6 +420,11 @@ static tOplkError processHistoryEvent(tOplkApiEventType EventType_p,
             (WORD)pHistoryEntry->aAddInfo[4], (WORD)pHistoryEntry->aAddInfo[5],
             (WORD)pHistoryEntry->aAddInfo[6], (WORD)pHistoryEntry->aAddInfo[7]);
 
+    if (pHistoryEntry->errorCode == E_DLL_CYCLE_EXCEED_TH ||
+        pHistoryEntry->errorCode == E_DLL_CYCLE_EXCEED)
+    {
+        pErrorFlags_l->fCycleError = TRUE;
+    }
     return kErrorOk;
 }
 
