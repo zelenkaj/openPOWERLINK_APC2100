@@ -59,7 +59,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //------------------------------------------------------------------------------
 // module global vars
 //------------------------------------------------------------------------------
-extern tErrorCounters errorCounter_g;
+
 //------------------------------------------------------------------------------
 // global function prototypes
 //------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ extern tErrorCounters errorCounter_g;
 //------------------------------------------------------------------------------
 // local vars
 //------------------------------------------------------------------------------
-static tErrorFlags* pErrorFlags_l;
+static tCommInstance* pCommInstance_l;
 
 //------------------------------------------------------------------------------
 // local function prototypes
@@ -137,9 +137,9 @@ The function initializes the applications event module
 */
 //------------------------------------------------------------------------------
 
-void initEvents(tErrorFlags* pErrorFlags_p)
+void initEvents(tCommInstance* pCommInstance_p)
 {
-    pErrorFlags_l = pErrorFlags_p;
+    pCommInstance_l = pCommInstance_p;
     plkled_init();
 }
 
@@ -272,7 +272,7 @@ static tOplkError processStateChangeEvent(tOplkApiEventType EventType_p,
     UNUSED_PARAMETER(EventType_p);
     UNUSED_PARAMETER(pUserArg_p);
 
-    if (pErrorFlags_l == NULL)
+    if (pCommInstance_l == NULL)
     {
         console_printlog("Application event module is not initialized!\n");
         return kErrorGeneralError;
@@ -291,12 +291,14 @@ static tOplkError processStateChangeEvent(tOplkApiEventType EventType_p,
                              debugstr_getNmtEventStr(pNmtStateChange->nmtEvent));
 
             // signal that stack is off
-            pErrorFlags_l->fGsOff = TRUE;
+            pCommInstance_l->errorFlags.fGsOff = TRUE;
             break;
 
         case kNmtGsResetCommunication:
 #ifndef CONFIG_INCLUDE_CFM
             ret = setDefaultNodeAssignment();
+#else
+            oplk_writeLocalObject(0x1006, 0, &pCommInstance_l->cycleLen, sizeof(pCommInstance_l->cycleLen));
 #endif
             console_printlog("StateChangeEvent(0x%X) originating event = 0x%X (%s)\n",
                              pNmtStateChange->newNmtState,
@@ -329,7 +331,9 @@ static tOplkError processStateChangeEvent(tOplkApiEventType EventType_p,
     }
 
     if (pNmtStateChange->nmtEvent == kNmtEventNmtCycleError)
-        errorCounter_g.cycleError++;
+        pCommInstance_l->errorCounter.cycleError++;
+
+    pCommInstance_l->mnState = pNmtStateChange->newNmtState;
 
     return ret;
 }
@@ -358,7 +362,7 @@ static tOplkError processErrorWarningEvent(tOplkApiEventType EventType_p,
 
     UNUSED_PARAMETER(EventType_p);
     UNUSED_PARAMETER(pUserArg_p);
-    errorCounter_g.stackError++;
+    pCommInstance_l->errorCounter.stackError++;
 
     console_printlog("Err/Warn: Source = %s (%02X) OplkError = %s (0x%03X)\n",
                      debugstr_getEventSourceStr(pInternalError->eventSource),
@@ -423,7 +427,7 @@ static tOplkError processHistoryEvent(tOplkApiEventType EventType_p,
     if (pHistoryEntry->errorCode == E_DLL_CYCLE_EXCEED_TH ||
         pHistoryEntry->errorCode == E_DLL_CYCLE_EXCEED)
     {
-        pErrorFlags_l->fCycleError = TRUE;
+        pCommInstance_l->errorFlags.fCycleError = TRUE;
     }
     return kErrorOk;
 }
@@ -607,6 +611,7 @@ static tOplkError processCfmResultEvent(tOplkApiEventType EventType_p,
 
         case kNmtNodeCommandConfErr:
             console_printlog("CFM Result: (Node=%d, ConfErr)\n", pCfmResult->nodeId);
+            pCommInstance_l->errorCounter.confError++;
             break;
 
         case kNmtNodeCommandConfReset:

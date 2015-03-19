@@ -51,7 +51,7 @@ SET(DEMO_SOURCES
     ${DEMO_SOURCE_DIR}/main.c
     ${DEMO_SOURCE_DIR}/app.c
     ${DEMO_SOURCE_DIR}/event.c
-    ${CONTRIB_SOURCE_DIR}/console/printlog.c
+    ${CONTRIB_SOURCE_DIR}/console/printlogfile.c
     ${CONTRIB_SOURCE_DIR}/getopt/getopt.c
     )
 

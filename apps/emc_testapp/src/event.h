@@ -61,7 +61,7 @@ extern "C"
 {
 #endif
 
-void initEvents(tErrorFlags* pErrorFlags_p);
+void initEvents(tCommInstance* pCommInstance_p);
 void exitEvents(void);
 tOplkError processEvents(tOplkApiEventType EventType_p,
                          tOplkApiEventArg* pEventArg_p,

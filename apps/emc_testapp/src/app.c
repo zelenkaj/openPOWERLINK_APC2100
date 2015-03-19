@@ -118,7 +118,8 @@ static int                  usedNodeIds_l[] = {1, 0};
 static APP_NODE_VAR_T       nodeVar_l[MAX_NODES];
 static PI_IN*               pProcessImageIn_l;
 static PI_OUT*              pProcessImageOut_l;
-
+static UINT                 appCycle_l;
+static tCommInstance*       pCommInstance_l;
 //------------------------------------------------------------------------------
 // local function prototypes
 //------------------------------------------------------------------------------
@@ -139,12 +140,17 @@ The function initializes the synchronous data application
 \ingroup module_demo_mn_console
 */
 //------------------------------------------------------------------------------
-tOplkError initApp(void)
+tOplkError initApp(tCommInstance* pCommInstance_p)
 {
     tOplkError ret = kErrorOk;
     int        i;
 
     cnt_g = 0;
+
+    if (pCommInstance_p == NULL)
+        return kErrorApiInvalidParam;
+
+    pCommInstance_l = pCommInstance_p;
 
     for (i = 0; (i < MAX_NODES) && (usedNodeIds_l[i] != 0); i++)
     {
@@ -159,6 +165,11 @@ tOplkError initApp(void)
         nodeVar_l[i].dataErrors = 0;
         nodeVar_l[i].nmtState = kNmtCsBasicEthernet;
     }
+
+    if (pCommInstance_p->appCycle > 0)
+        appCycle_l = pCommInstance_p->appCycle;
+    else
+        appCycle_l = DATA_CYLE_DELAY;
 
     ret = initProcessImage();
 
@@ -230,9 +241,9 @@ tOplkError processSync(void)
                 }
                 else
                 {
-                    if (inCnt == DATA_CYLE_DELAY)
+                    if (inCnt == appCycle_l)
                     {
-                        errorCounter_g.dataError++;
+                        pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -262,9 +273,9 @@ tOplkError processSync(void)
                 else
                 {
                     // Is this the error?? should we move to next value or wait for last
-                    if (inCnt == DATA_CYLE_DELAY)
+                    if (inCnt == appCycle_l)
                     {
-                        errorCounter_g.dataError++;
+                        pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -295,9 +306,9 @@ tOplkError processSync(void)
                 else
                 {
                     // Is this the error?? should we move to next value or wait for last
-                    if (inCnt == DATA_CYLE_DELAY)
+                    if (inCnt == appCycle_l)
                     {
-                        errorCounter_g.dataError++;
+                        pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -318,9 +329,9 @@ tOplkError processSync(void)
                 else
                 {
                     //error increase the data error count, stay here?
-                    if (inCnt == DATA_CYLE_DELAY)
+                    if (inCnt == appCycle_l)
                     {
-                        errorCounter_g.dataError++;
+                        pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -341,9 +352,9 @@ tOplkError processSync(void)
                 else
                 {
                     //error increase the data error count, stay here?
-                    if (inCnt == DATA_CYLE_DELAY)
+                    if (inCnt == appCycle_l)
                     {
-                        errorCounter_g.dataError++;
+                        pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
                     }
                     else
@@ -357,7 +368,7 @@ tOplkError processSync(void)
 
         /* Running LEDs */
         /* period for LED flashing determined by CYCLE_DELAY */
-        nodeVar_l[i].period = DATA_CYLE_DELAY;
+        nodeVar_l[i].period = appCycle_l;
         if (cnt_g % nodeVar_l[i].period == 0)
         {
             switch (nodeVar_l[i].outLedState)
@@ -417,12 +428,6 @@ tOplkError processSync(void)
     pProcessImageIn_l->CN1_M00_DigitalOutput_00h_AU12_DigitalOutput = nodeVar_l[0].outleds;
 
     ret = oplk_exchangeProcessImageIn();
-
-    if ((cnt_g % DEFAULT_MAX_CYCLE_COUNT) == 0)
-    {
-        printf("\rCycles %d Data Errors %d", cnt_g, errorCounter_g.dataError);
-        fflush(stdout);
-    }
 
     return ret;
 }

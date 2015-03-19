@@ -67,6 +67,15 @@ typedef struct sErrorCounters
     UINT            dataError;
 } tErrorCounters;
 
+typedef struct sCommInstance
+{
+    tErrorCounters      errorCounter;
+    tErrorFlags         errorFlags;
+    tNmtState           mnState;
+    UINT                appCycle;
+    UINT                cycleLen;
+} tCommInstance;
+
 //------------------------------------------------------------------------------
 // function prototypes
 //------------------------------------------------------------------------------
@@ -76,7 +85,7 @@ extern "C"
 {
 #endif
 
-tOplkError initApp(void);
+tOplkError initApp(tCommInstance* pCommInstance_p);
 void shutdownApp(void);
 tOplkError processSync(void);
 void updateNodeOperationalState(UINT nodeId_p, tNmtState nmtState_p);

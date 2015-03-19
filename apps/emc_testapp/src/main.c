@@ -45,6 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <limits.h>
 #include <string.h>
+#include <time.h>
 
 #include <oplk/oplk.h>
 #include <oplk/debugstr.h>
@@ -63,7 +64,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //------------------------------------------------------------------------------
 // const defines
 //------------------------------------------------------------------------------
-#define CYCLE_LEN         UINT_MAX
+#define CYCLE_LEN         5000
 #define NODEID            0xF0                //=> MN
 #define IP_ADDR           0xc0a86401          // 192.168.100.1
 #define SUBNET_MASK       0xFFFFFF00          // 255.255.255.0
@@ -76,6 +77,8 @@ const BYTE aMacAddr_g[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static tErrorFlags errorFlags_l;
 extern UINT   cnt_g;
 tErrorCounters  errorCounter_g;
+char fGenerateLogs = TRUE;
+static tCommInstance   commInstance_l;
 //------------------------------------------------------------------------------
 // global function prototypes
 //------------------------------------------------------------------------------
@@ -95,6 +98,8 @@ typedef struct
 {
     char        cdcFile[256];
     char*       pLogFile;
+    UINT        cycleLen;
+    UINT        appCycle;
 } tOptions;
 
 typedef enum 
@@ -113,6 +118,8 @@ typedef UINT tAppExitReturn;
 //------------------------------------------------------------------------------
 // local vars
 //------------------------------------------------------------------------------
+static HANDLE      errorCounterThread_l;
+static BOOL        fThreadExit = FALSE;
 
 //------------------------------------------------------------------------------
 // local function prototypes
@@ -122,6 +129,7 @@ static tOplkError initPowerlink(UINT32 cycleLen_p, char* pszCdcFileName_p,
                                 const BYTE* macAddr_p);
 static UINT loopMain(void);
 static void shutdownPowerlink(void);
+static DWORD WINAPI errorCounterThread(LPVOID arg_p);
 
 //============================================================================//
 //            P U B L I C   F U N C T I O N S                                 //
@@ -143,10 +151,16 @@ This is the main function of the openPOWERLINK console MN demo application.
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-    tOplkError                  ret = kErrorOk;
-    tOptions                    opts;
-    UINT32                      version;
-    tAppExitReturn              appRet;
+    tOplkError          ret = kErrorOk;
+    tOptions            opts;
+    UINT32              version;
+    tAppExitReturn      appRet;
+    time_t              timeStamp;
+    struct tm*          p_timeVal;
+    char                dateStr[20];
+    char                timeStr[20];
+
+    memset(&opts, 0, sizeof(tOptions));
 
     getOptions(argc, argv, &opts);
 
@@ -156,9 +170,22 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    memset(&errorCounter_g, 0, sizeof(tErrorCounters));
+    if (opts.pLogFile != NULL)
+        console_init(opts.pLogFile);
+    else
+    {
+        time(&timeStamp);
+        p_timeVal = localtime(&timeStamp);
+        opts.pLogFile = malloc(256);
+        strftime(dateStr, 20, "%Y%m%d", p_timeVal);
+        strftime(timeStr, 20, "%H%M%S", p_timeVal); 
+        sprintf(opts.pLogFile, "log_%s_%s.txt", dateStr, timeStr);
+        console_init(opts.pLogFile);
+    }
 
-    initEvents(&errorFlags_l);
+    memset(&commInstance_l, 0, sizeof(tCommInstance));
+
+    initEvents(&commInstance_l);
 
     version = oplk_getVersion();
     printf("----------------------------------------------------\n");
@@ -166,13 +193,28 @@ int main(int argc, char** argv)
     printf("using openPOWERLINK Stack: %x.%x.%x\n", PLK_STACK_VER(version), PLK_STACK_REF(version), PLK_STACK_REL(version));
     printf("----------------------------------------------------\n");
 
-    if ((ret = initPowerlink(CYCLE_LEN, opts.cdcFile, aMacAddr_g)) != kErrorOk)
+    if (opts.cycleLen > 0)
+        commInstance_l.cycleLen = opts.cycleLen;
+    else
+        commInstance_l.cycleLen = CYCLE_LEN;
+
+    commInstance_l.appCycle = opts.appCycle;
+
+    if ((ret = initPowerlink(commInstance_l.cycleLen, opts.cdcFile, aMacAddr_g)) != kErrorOk)
         goto Exit;
 
-    if ((ret = initApp()) != kErrorOk)
+    if ((ret = initApp(&commInstance_l)) != kErrorOk)
         goto Exit;
 
     // TODO implement a separate thread to monitor ProcessSync
+
+    errorCounterThread_l = CreateThread(NULL,  // Default security attributes
+                                0,                        // Use Default stack size
+                                errorCounterThread,               // Thread routine
+                                NULL,                     // Argum to the thread routine
+                                0,                        // Use default creation flags
+                                NULL                      // Returned thread Id
+                                );
 
     while (1)
     {
@@ -187,9 +229,9 @@ int main(int argc, char** argv)
             shutdownApp();
             system_msleep(1000);
 
-            if ((ret = initPowerlink(CYCLE_LEN, opts.cdcFile, aMacAddr_g)) != kErrorOk)
+            if ((ret = initPowerlink(commInstance_l.cycleLen, opts.cdcFile, aMacAddr_g)) != kErrorOk)
                 goto ExitFail;
-            if ((ret = initApp()) != kErrorOk)
+            if ((ret = initApp(&commInstance_l)) != kErrorOk)
                 goto ExitFail;
         }
     }
@@ -204,6 +246,10 @@ ExitFail:
         printf("Main exited with error 0x%X\n",ret);
     system_exit();
 
+    fThreadExit = TRUE;
+    system_msleep(1000);
+    CloseHandle(errorCounterThread_l);
+    console_exit();
     return 0;
 }
 
@@ -341,6 +387,7 @@ static tAppExitReturn loopMain(void)
     printf("\n-------------------------------\n");
     printf("Press Esc to leave the program\n");
     printf("Press r to reset the node\n");
+    printf("Press p to clear error counters\n");
     printf("-------------------------------\n\n");
 
     while (!fExit)
@@ -367,7 +414,10 @@ static tAppExitReturn loopMain(void)
                         fExit = TRUE;
                     }
                     break;
-
+                case 'p':
+                    // clear all counters
+                    memset(&commInstance_l.errorCounter, 0, sizeof(commInstance_l.errorCounter));
+                    break;
                 case 0x1B:
                     appReturn = kExitUser;
                     fExit = TRUE;
@@ -393,7 +443,7 @@ static tAppExitReturn loopMain(void)
 
         if (oplk_checkKernelStack() == FALSE)
         {
-            errorCounter_g.heartBeatError++;
+            commInstance_l.errorCounter.heartBeatError++;
             fExit = TRUE;
             appReturn = kExitHeartBeat;
             fprintf(stderr, "Kernel stack has gone! Exiting...\n");
@@ -435,7 +485,7 @@ static void shutdownPowerlink(void)
     UINT                i;
 
     // NMT_GS_OFF state has not yet been reached
-    errorFlags_l.fGsOff = FALSE;
+    commInstance_l.errorFlags.fGsOff = FALSE;
 
 #if !defined(CONFIG_KERNELSTACK_DIRECTLINK) && defined(CONFIG_USE_SYNCTHREAD)
     system_stopSyncThread();
@@ -448,7 +498,7 @@ static void shutdownPowerlink(void)
     // small loop to implement timeout waiting for thread to terminate
     for (i = 0; i < 1000; i++)
     {
-        if (errorFlags_l.fGsOff)
+        if (commInstance_l.errorFlags.fGsOff)
             break;
     }
 
@@ -475,13 +525,13 @@ options at pOpts_p.
 static int getOptions(int argc_p, char** argv_p, tOptions* pOpts_p)
 {
     int                         opt;
-
+    char                        param[6];
     /* setup default parameters */
     strncpy(pOpts_p->cdcFile, "mnobd.cdc", 256);
     pOpts_p->pLogFile = NULL;
 
     /* get command line parameters */
-    while ((opt = getopt(argc_p, argv_p, "c:l:")) != -1)
+    while ((opt = getopt(argc_p, argv_p, "c:l:d:t:a:")) != -1)
     {
         switch (opt)
         {
@@ -493,12 +543,66 @@ static int getOptions(int argc_p, char** argv_p, tOptions* pOpts_p)
                 pOpts_p->pLogFile = optarg;
                 break;
 
+            case 'd':
+                // generate logs
+                strncpy(param, optarg, 6);
+
+                if (strcmp(param, "TRUE") == 0)
+                    fGenerateLogs = TRUE;
+                else
+                    fGenerateLogs = FALSE;
+
+                break;
+            case 't':
+                pOpts_p->cycleLen = strtoul(optarg, NULL, 10);
+                break;
+
+            case 'a':
+                pOpts_p->appCycle = strtoul(optarg, NULL, 10);
+                break;
+
             default: /* '?' */
-                printf("Usage: %s [-c CDC-FILE] [-l LOGFILE]\n", argv_p[0]);
+                printf("Usage: %s [-c CDC-FILE] [-l LOGFILE] [-t CYCLE_LEN] [-a APP_CYCLE] [-d {TRUE/FALSE}]\n", argv_p[0]);
                 return -1;
         }
     }
     return 0;
 }
 
+//------------------------------------------------------------------------------
+/**
+\brief  Error counter display thread
+
+This thread is used to displat the error counters.
+
+\param  arg_p     Thread parameter. Not used!
+
+\return The function returns the thread exit code.
+*/
+//------------------------------------------------------------------------------
+static DWORD WINAPI errorCounterThread(LPVOID arg_p)
+{
+    while (!fThreadExit)
+    {
+        if (commInstance_l.mnState == kNmtMsOperational)
+        {
+            system("cls");
+            printf("\n-------------------------------\n");
+            printf("Press r to reset Node\nPress p to clear counters\nPress ESC to close application");
+            printf("\n-------------------------------\n\n");
+            printf("Cycles: %d\n", cnt_g);
+            printf("Data Errors : %d\n",commInstance_l.errorCounter.dataError);
+            printf("Hearbeat Errors: %d\n",commInstance_l.errorCounter.heartBeatError);
+            printf("Cycle Errors: %d\n", commInstance_l.errorCounter.cycleError);
+            printf("Configuration Errors: %d\n", commInstance_l.errorCounter.confError);
+            printf("Stack Errors: %d\n", commInstance_l.errorCounter.stackError);
+            printf("NMT Errors: %d\n", commInstance_l.errorCounter.nmtError);
+            
+        }
+        system_msleep(100);
+    }
+
+    printf("Exit Error Counter Thread\n");
+    return 0;
+}
 /// \}

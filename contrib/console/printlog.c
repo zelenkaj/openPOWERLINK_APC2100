@@ -42,6 +42,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>
 #include <time.h>
 
+//-------------------------------------------------------------------------------
+// global variables
+//-------------------------------------------------------------------------------
+extern char fGenerateLogs;
 //============================================================================//
 //            P U B L I C   F U N C T I O N S                                 //
 //============================================================================//
@@ -65,6 +69,9 @@ void console_printlog(char* fmt, ...)
     time_t              timeStamp;
     struct tm*          p_timeVal;
     char                timeStr[20];
+
+    if (!fGenerateLogs)
+        return;
 
     time(&timeStamp);
     p_timeVal = localtime(&timeStamp);
@@ -91,6 +98,9 @@ The function adds a string to a log entry on the console (no timestamp).
 void console_printlogadd(char* fmt, ...)
 {
     va_list             arglist;
+
+    if (!fGenerateLogs)
+        return;
 
     va_start(arglist, fmt);
     vfprintf(stderr, fmt, arglist);
