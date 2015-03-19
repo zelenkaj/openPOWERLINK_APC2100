@@ -65,7 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define APP_LED_MASK_4          (0x0A95)                    // 1 & 3 & 5 & 8 & 10 & 12
 #define APP_LED_MASK_5          (0x056A)                    // 7 & 9 & 11 & 6 & 4 & 2 
 #define MAX_NODES               255
-#define DATA_CYLE_DELAY         1
+#define DATA_CYLE_DELAY         40
 //------------------------------------------------------------------------------
 // module global vars
 //------------------------------------------------------------------------------
@@ -120,6 +120,7 @@ static PI_IN*               pProcessImageIn_l;
 static PI_OUT*              pProcessImageOut_l;
 static UINT                 appCycle_l;
 static tCommInstance*       pCommInstance_l;
+static UINT                 inputCheckTolerance_l;
 //------------------------------------------------------------------------------
 // local function prototypes
 //------------------------------------------------------------------------------
@@ -170,6 +171,8 @@ tOplkError initApp(tCommInstance* pCommInstance_p)
         appCycle_l = pCommInstance_p->appCycle;
     else
         appCycle_l = DATA_CYLE_DELAY;
+
+    inputCheckTolerance_l = (appCycle_l * 3) / 2;
 
     ret = initProcessImage();
 
