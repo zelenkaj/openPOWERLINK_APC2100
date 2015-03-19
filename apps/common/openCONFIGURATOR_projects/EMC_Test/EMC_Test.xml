@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openCONFIGURATORProject xmlns="http://sourceforge.net/projects/openconf/configuration" xmlns:oc="http://sourceforge.net/projects/openconf/configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sourceforge.net/projects/openconf/configuration openCONFIGURATOR.xsd">
- <Generator vendor="Kalycito Infotech Private Limited &amp; Bernecker + Rainer Industrie Elektronik Ges.m.b.H." toolName="openCONFIGURATOR" toolVersion="1.4.1" createdOn="2015-03-18T16:04:43" modifiedOn="2015-03-18T16:10:05"/>
+ <Generator vendor="Kalycito Infotech Private Limited &amp; Bernecker + Rainer Industrie Elektronik Ges.m.b.H." toolName="openCONFIGURATOR" toolVersion="1.4.0" createdOn="2015-03-18T16:04:43" modifiedOn="2015-03-19T16:14:43"/>
  <IDEConfiguration activeViewSetting="ADVANCED">
   <ViewSettings type="BASIC">
    <Setting name="default" value="SIMPLE"/>
@@ -16,7 +16,7 @@
   <AutoGenerationSettings id="all"/>
   <AutoGenerationSettings id="none"/>
  </ProjectConfiguration>
- <NetworkConfiguration cycleTime="5000" asyncMTU="300" multiplexedCycleLength="0">
+ <NetworkConfiguration cycleTime="1000" asyncMTU="300" multiplexedCycleLength="0">
   <NodeCollection>
    <MN nodeID="240" name="openPOWERLINK_MN" pathToXDC="deviceConfiguration/openPOWERLINK_MN.xdc"/>
    <CN nodeID="1" name="CN_1" pathToXDC="deviceConfiguration/CN_1_1_1.xdc"/>

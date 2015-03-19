@@ -144,7 +144,7 @@
         <ObjectList>
           <Object index="1000" name="NMT_DeviceType_U32" objectType="7" dataType="0007" accessType="const" defaultValue="0x000F0191" PDOmapping="no"/>
           <Object index="1001" name="ERR_ErrorRegister_U8" objectType="7" dataType="0005" accessType="ro" defaultValue="0" PDOmapping="optional"/>
-          <Object index="1006" name="NMT_CycleLen_U32" objectType="7" dataType="0007" accessType="rw" defaultValue="1000" PDOmapping="no" actualValue="0X1388"/>
+          <Object index="1006" name="NMT_CycleLen_U32" objectType="7" dataType="0007" accessType="rw" defaultValue="1000" PDOmapping="no"/>
           <Object index="1008" name="NMT_ManufactDevName_VS" objectType="7" dataType="0009" accessType="const" defaultValue="openPOWERLINK device" PDOmapping="no"/>
           <Object index="1009" name="NMT_ManufactHwVers_VS" objectType="7" dataType="0009" accessType="const" defaultValue="1.00" PDOmapping="no"/>
           <Object index="100A" name="NMT_ManufactSwVers_VS" objectType="7" dataType="0009" accessType="const" defaultValue="OPLK V2.0.0-b1" PDOmapping="no"/>
@@ -157,8 +157,8 @@
           </Object>
           <Object index="1020" name="CFM_VerifyConfiguration_REC" objectType="9">
             <SubObject subIndex="00" name="NumberOfEntries" objectType="7" dataType="0005" accessType="const" defaultValue="2"/>
-            <SubObject subIndex="01" name="ConfDate_U32" objectType="7" dataType="0007" accessType="rw" defaultValue="0" actualValue="11399"/>
-            <SubObject subIndex="02" name="ConfTime_U32" objectType="7" dataType="0007" accessType="rw" defaultValue="0" actualValue="57978000"/>
+            <SubObject subIndex="01" name="ConfDate_U32" objectType="7" dataType="0007" accessType="rw" defaultValue="0" actualValue="11400"/>
+            <SubObject subIndex="02" name="ConfTime_U32" objectType="7" dataType="0007" accessType="rw" defaultValue="0" actualValue="58476000"/>
           </Object>
           <Object index="1030" name="NMT_InterfaceGroup_0h_REC" objectType="9">
             <SubObject subIndex="00" name="NumberOfEntries" objectType="7" dataType="0005" accessType="const" defaultValue="9" PDOmapping="no"/>

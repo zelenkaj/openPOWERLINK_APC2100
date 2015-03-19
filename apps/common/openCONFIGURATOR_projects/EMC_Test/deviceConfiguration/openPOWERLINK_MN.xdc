@@ -144,7 +144,7 @@
         <ObjectList>
           <Object index="1000" name="NMT_DeviceType_U32" objectType="7" dataType="0007" accessType="const" PDOmapping="no" defaultValue="0x00000000"/>
           <Object index="1001" name="ERR_ErrorRegister_U8" objectType="7" dataType="0005" accessType="ro" PDOmapping="optional" defaultValue="0"/>
-          <Object index="1006" name="NMT_CycleLen_U32" objectType="7" dataType="0007" accessType="rw" PDOmapping="no" defaultValue="400" actualValue="0X1388"/>
+          <Object index="1006" name="NMT_CycleLen_U32" objectType="7" dataType="0007" accessType="rw" PDOmapping="no" defaultValue="400" actualValue="0X3E8"/>
           <Object index="1008" name="NMT_ManufactDevName_VS" objectType="7" dataType="0009" accessType="const" PDOmapping="no" defaultValue="openPOWERLINK device"/>
           <Object index="1009" name="NMT_ManufactHwVers_VS" objectType="7" dataType="0009" accessType="const" PDOmapping="no" defaultValue="1.00"/>
           <Object index="100A" name="NMT_ManufactSwVers_VS" objectType="7" dataType="0009" accessType="const" PDOmapping="no"/>
@@ -23700,7 +23700,7 @@
           </Object>
           <Object index="1F26" name="CFM_ExpConfDateList_AU32" objectType="8" dataType="0007">
             <SubObject subIndex="00" name="NumberOfEntries" objectType="7" dataType="0005" accessType="ro" PDOmapping="no" defaultValue="254"/>
-            <SubObject subIndex="01" name="CNConfigurationDate01" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no" actualValue="11399"/>
+            <SubObject subIndex="01" name="CNConfigurationDate01" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no" actualValue="11400"/>
             <SubObject subIndex="02" name="CNConfigurationDate02" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no"/>
             <SubObject subIndex="03" name="CNConfigurationDate03" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no"/>
             <SubObject subIndex="04" name="CNConfigurationDate04" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no"/>
@@ -23957,7 +23957,7 @@
           </Object>
           <Object index="1F27" name="CFM_ExpConfTimeList_AU32" objectType="8" dataType="0007">
             <SubObject subIndex="00" name="NumberOfEntries" objectType="7" dataType="0005" accessType="ro" PDOmapping="no" defaultValue="254"/>
-            <SubObject subIndex="01" name="CNConfigurationTime01" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no" actualValue="57978000"/>
+            <SubObject subIndex="01" name="CNConfigurationTime01" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no" actualValue="58476000"/>
             <SubObject subIndex="02" name="CNConfigurationTime02" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no"/>
             <SubObject subIndex="03" name="CNConfigurationTime03" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no"/>
             <SubObject subIndex="04" name="CNConfigurationTime04" objectType="7" dataType="0007" accessType="rw" defaultValue="0" PDOmapping="no"/>
