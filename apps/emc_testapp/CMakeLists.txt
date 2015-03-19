@@ -1,6 +1,6 @@
 ################################################################################
 #
-# CMake file of APC2100 CiA 302 MN console demo application
+# CMake file of APC2100 CiA 302 MN EMC test application
 #
 # Copyright (c) 2015, Bernecker+Rainer Industrie-Elektronik Ges.m.b.H. (B&R)
 # All rights reserved.
@@ -31,8 +31,8 @@
 ################################################################################
 # Setup project and generic options
 
-PROJECT(demo_mn_console C)
-MESSAGE(STATUS "Configuring demo_mn_console")
+PROJECT(emc_testapp C)
+MESSAGE(STATUS "Configuring emc_testapp")
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8.7)
 
@@ -91,8 +91,8 @@ SOURCE_GROUP("Architecture Specific Sources" FILES ${DEMO_ARCH_SOURCES})
 ################################################################################
 # Set the executable
 
-ADD_EXECUTABLE(demo_mn_console ${DEMO_SOURCES} ${DEMO_ARCH_SOURCES} ${CMAKE_BINARY_DIR}/mnobd.cdc)
-SET_PROPERTY(TARGET demo_mn_console
+ADD_EXECUTABLE(emc_testapp ${DEMO_SOURCES} ${DEMO_ARCH_SOURCES} ${CMAKE_BINARY_DIR}/mnobd.cdc)
+SET_PROPERTY(TARGET emc_testapp
              PROPERTY COMPILE_DEFINITIONS_DEBUG DEBUG;DEF_DEBUG_LVL=${CFG_DEBUG_LVL})
 
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/mnobd.cdc
@@ -104,11 +104,11 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/mnobd.cdc
 ################################################################################
 # Libraries to link
 
-TARGET_LINK_LIBRARIES(demo_mn_console optimized ${OPLKLIB} debug ${OPLKLIB_DEBUG})
-TARGET_LINK_LIBRARIES(demo_mn_console ${ARCH_LIBRARIES})
+TARGET_LINK_LIBRARIES(emc_testapp optimized ${OPLKLIB} debug ${OPLKLIB_DEBUG})
+TARGET_LINK_LIBRARIES(emc_testapp ${ARCH_LIBRARIES})
 
 ################################################################################
 # Installation rules
 
-INSTALL(TARGETS demo_mn_console RUNTIME DESTINATION ${CMAKE_PROJECT_NAME})
+INSTALL(TARGETS emc_testapp RUNTIME DESTINATION ${CMAKE_PROJECT_NAME})
 INSTALL(FILES ${CMAKE_BINARY_DIR}/mnobd.cdc DESTINATION ${CMAKE_PROJECT_NAME})

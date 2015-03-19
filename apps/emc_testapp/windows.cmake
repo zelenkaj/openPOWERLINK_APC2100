@@ -1,6 +1,6 @@
 ################################################################################
 #
-# Windows definitions for console demo application
+# Windows definitions for EMC test application
 #
 # Copyright (c) 2015, Bernecker+Rainer Industrie-Elektronik Ges.m.b.H. (B&R)
 # All rights reserved.
