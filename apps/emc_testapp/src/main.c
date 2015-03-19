@@ -64,7 +64,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //------------------------------------------------------------------------------
 // const defines
 //------------------------------------------------------------------------------
-#define CYCLE_LEN         5000
+#define CYCLE_LEN         UINT_MAX
 #define NODEID            0xF0                //=> MN
 #define IP_ADDR           0xc0a86401          // 192.168.100.1
 #define SUBNET_MASK       0xFFFFFF00          // 255.255.255.0

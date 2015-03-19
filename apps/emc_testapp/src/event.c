@@ -298,7 +298,9 @@ static tOplkError processStateChangeEvent(tOplkApiEventType EventType_p,
 #ifndef CONFIG_INCLUDE_CFM
             ret = setDefaultNodeAssignment();
 #else
-            oplk_writeLocalObject(0x1006, 0, &pCommInstance_l->cycleLen, sizeof(pCommInstance_l->cycleLen));
+            if (pCommInstance_l->cycleLen != UINT_MAX)
+                oplk_writeLocalObject(0x1006, 0, &pCommInstance_l->cycleLen,
+                sizeof(pCommInstance_l->cycleLen));
 #endif
             console_printlog("StateChangeEvent(0x%X) originating event = 0x%X (%s)\n",
                              pNmtStateChange->newNmtState,
