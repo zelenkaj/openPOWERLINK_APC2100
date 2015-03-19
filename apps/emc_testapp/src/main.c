@@ -77,7 +77,7 @@ const BYTE aMacAddr_g[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static tErrorFlags errorFlags_l;
 extern UINT   cnt_g;
 tErrorCounters  errorCounter_g;
-char fGenerateLogs = TRUE;
+char fGenerateLogs = FALSE;
 static tCommInstance   commInstance_l;
 //------------------------------------------------------------------------------
 // global function prototypes
@@ -161,6 +161,8 @@ int main(int argc, char** argv)
     char                timeStr[20];
 
     memset(&opts, 0, sizeof(tOptions));
+
+    fGenerateLogs = FALSE; // default
 
     getOptions(argc, argv, &opts);
 
@@ -531,7 +533,7 @@ static int getOptions(int argc_p, char** argv_p, tOptions* pOpts_p)
     pOpts_p->pLogFile = NULL;
 
     /* get command line parameters */
-    while ((opt = getopt(argc_p, argv_p, "c:l:d:t:a:")) != -1)
+    while ((opt = getopt(argc_p, argv_p, "c:l:dt:a:")) != -1)
     {
         switch (opt)
         {
@@ -545,12 +547,7 @@ static int getOptions(int argc_p, char** argv_p, tOptions* pOpts_p)
 
             case 'd':
                 // generate logs
-                strncpy(param, optarg, 6);
-
-                if (strcmp(param, "TRUE") == 0)
                     fGenerateLogs = TRUE;
-                else
-                    fGenerateLogs = FALSE;
 
                 break;
             case 't':

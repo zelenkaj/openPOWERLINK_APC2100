@@ -65,6 +65,9 @@ The function initializes the resources for log generation in a file.
 //------------------------------------------------------------------------------
 void console_init(char* pszLogfile_p)
 {
+    if (!fGenerateLogs)
+        return;
+
     pLogFile = fopen(pszLogfile_p, "w+");
 }
 
@@ -79,6 +82,9 @@ The function frees the resources used for log generation in a file.
 //------------------------------------------------------------------------------
 void console_exit(void)
 {
+    if (!fGenerateLogs)
+        return;
+
     fclose(pLogFile);
 }
 
