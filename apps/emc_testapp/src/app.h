@@ -65,6 +65,7 @@ typedef struct sErrorCounters
     UINT            nmtError;
     UINT            confError;
     UINT            dataError;
+    UINT            nodeError;
 } tErrorCounters;
 
 typedef struct sCommInstance

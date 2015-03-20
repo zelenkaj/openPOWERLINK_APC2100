@@ -74,9 +74,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // module global vars
 //------------------------------------------------------------------------------
 const BYTE aMacAddr_g[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static tErrorFlags errorFlags_l;
 extern UINT   cnt_g;
-tErrorCounters  errorCounter_g;
 char fGenerateLogs = FALSE;
 static tCommInstance   commInstance_l;
 //------------------------------------------------------------------------------
@@ -364,7 +362,7 @@ static tAppExitReturn loopMain(void)
     char                    cKey = 0;
     BOOL                    fExit = FALSE;
     tAppExitReturn          appReturn = kExitUnknown;
-    static                  startSync = TRUE;
+    static BOOL             startSync = TRUE;
 
 #if !defined(CONFIG_KERNELSTACK_DIRECTLINK)
 
@@ -451,13 +449,22 @@ static tAppExitReturn loopMain(void)
             fprintf(stderr, "Kernel stack has gone! Exiting...\n");
         }
 
-        if (errorFlags_l.fCycleError)
+        if (commInstance_l.errorFlags.fCycleError)
         {
             fExit = TRUE;
+            commInstance_l.errorCounter.cycleError++;
+            commInstance_l.errorFlags.fCycleError = FALSE;
             appReturn = kExitCycleError;
             fprintf(stderr, "Cycle error ocurred Exiting...\n");
         }
 
+        if (commInstance_l.errorFlags.fGsOff)
+        {
+            fExit = TRUE;
+            commInstance_l.errorFlags.fGsOff = FALSE;
+            appReturn = kExitGsOff;
+            fprintf(stderr, "GSOFF Exiting...\n");
+        }
 #if defined(CONFIG_USE_SYNCTHREAD) || defined(CONFIG_KERNELSTACK_DIRECTLINK)
         system_msleep(100);
 #else
@@ -527,7 +534,6 @@ options at pOpts_p.
 static int getOptions(int argc_p, char** argv_p, tOptions* pOpts_p)
 {
     int                         opt;
-    char                        param[6];
     /* setup default parameters */
     strncpy(pOpts_p->cdcFile, "mnobd.cdc", 256);
     pOpts_p->pLogFile = NULL;
@@ -594,6 +600,7 @@ static DWORD WINAPI errorCounterThread(LPVOID arg_p)
             printf("Configuration Errors: %d\n", commInstance_l.errorCounter.confError);
             printf("Stack Errors: %d\n", commInstance_l.errorCounter.stackError);
             printf("NMT Errors: %d\n", commInstance_l.errorCounter.nmtError);
+            printf("Node Errors: %d\n", commInstance_l.errorCounter.nodeError);
             
         }
         system_msleep(100);

@@ -479,6 +479,7 @@ static tOplkError processNodeEvent(tOplkApiEventType EventType_p,
                              pNode->nodeId,
                              debugstr_getEmergErrCodeStr(pNode->errorCode),
                              pNode->errorCode);
+            pCommInstance_l->errorCounter.nodeError++;
             break;
 
         case kNmtNodeEventFound:
