@@ -244,7 +244,7 @@ tOplkError processSync(void)
                 }
                 else
                 {
-                    if (inCnt == appCycle_l)
+                    if (inCnt == inputCheckTolerance_l)
                     {
                         pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
@@ -276,7 +276,7 @@ tOplkError processSync(void)
                 else
                 {
                     // Is this the error?? should we move to next value or wait for last
-                    if (inCnt == appCycle_l)
+                    if (inCnt == inputCheckTolerance_l)
                     {
                         pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
@@ -309,7 +309,7 @@ tOplkError processSync(void)
                 else
                 {
                     // Is this the error?? should we move to next value or wait for last
-                    if (inCnt == appCycle_l)
+                    if (inCnt == inputCheckTolerance_l)
                     {
                         pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
@@ -332,7 +332,7 @@ tOplkError processSync(void)
                 else
                 {
                     //error increase the data error count, stay here?
-                    if (inCnt == appCycle_l)
+                    if (inCnt == inputCheckTolerance_l)
                     {
                         pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
@@ -355,7 +355,7 @@ tOplkError processSync(void)
                 else
                 {
                     //error increase the data error count, stay here?
-                    if (inCnt == appCycle_l)
+                    if (inCnt == inputCheckTolerance_l)
                     {
                         pCommInstance_l->errorCounter.dataError++;
                         inCnt = 0;
